@@ -1,6 +1,15 @@
 import json
+import sys
+
 from flask import Flask
 from flask import request
+
+if len( sys.argv ) < 2:
+    print( 'Service URL should be provided' )
+    exit( 1 )
+
+GREETING_URL = "https://46elks.com/static/sound/ivr-menu.mp3"
+SERVICE_URL = sys.argv[1]
 
 app = Flask(__name__)
 
@@ -8,25 +17,23 @@ app = Flask(__name__)
 def home():
     print(request.form)
     response = {
-        "ivr": "https://46elks.com/static/sound/ivr-menu.mp3",
-        "digits": 1,
-        "next":"https://f6acf45efaec.ngrok.io/ivr"
+        "play": GREETING_URL,
+        "next": SERVICE_URL + "/record"
     }
     return json.dumps(response)
 
-@app.route("/ivr", methods=['POST'])
-def calls_in():
+@app.route("/record", methods=['POST'])
+def record():
     print(request.form)
-    if request.form['result'] == "1":
-        voice_start = {
-            'play': "https://www.46elks.com/static/sound/voiceinfo.mp3"
-        }
-        return json.dumps(voice_start)
-    elif request.form['result'] == "2":
-        voice_start = {
-            'play': "https://www.46elks.com/static/sound/smsinfo.mp3",
-        }
-        return json.dumps(voice_start)
+    response = {
+        'record': SERVICE_URL + "/process"
+    }
+    return json.dumps(response)
+
+@app.route("/process", methods=['POST'])
+def process():
+    print(request.form)
+    return json.dumps({})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5501)
